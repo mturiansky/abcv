@@ -1,12 +1,14 @@
 FROM python:3.7-slim-buster
 
 # build requirements
-run apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     curl \
+    libpyside2-py3-5.11 \
     libtbb-dev \
-    pybind11-dev
+    pybind11-dev \
+    python3-pyside2.qtgui
 
 # embree
 ENV CPATH=/opt/embree-3.6.1.x86_64.linux/include:$CPATH \

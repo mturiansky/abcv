@@ -19,7 +19,7 @@ setup(
     url='https://github.com/mturiansky/abcv',
     packages=find_packages(),
     install_requires=[
-        'numpy>=1.17.1', 'pymatgen>=2019.9.16'
+        'numpy>=1.17.1', 'pymatgen>=2019.9.16', 'pyside2'
     ],
     extras_require={
         'dev': ['nose2>=0.9.1', 'coverage>=4.5.3', 'pillow>=6.1.0'],

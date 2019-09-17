@@ -1,8 +1,9 @@
 import PIL
 import fresnel
+import fresnel.interact
 import itertools
 import numpy as np
-from abcv.utils import make_unit_cell
+from abcv.utils import make_unit_cell, make_bonds
 
 
 COLORSCHEME = [
@@ -33,8 +34,9 @@ class Viewer:
         self.unit_cell = None
         self._image = None
 
-    def generate_scene(self, background_color=None, radius_scale=0.666):
+    def generate_scene(self, background_color=None, radius_scale=0.5):
         self.scene = fresnel.Scene()
+        self.scene.lights = fresnel.light.rembrandt()
 
         if background_color is not None:
             self.scene.background_color = background_color[:3]
@@ -45,7 +47,7 @@ class Viewer:
             self.scene,
             position=self.structure.cart_coords,
             radius=1.0,
-            outline_width=0.
+            outline_width=0.05
         )
 
         self.atoms.radius[:] = \
@@ -53,10 +55,18 @@ class Viewer:
              for x in self.structure]
 
         self.atoms.material = fresnel.material.Material()
+        self.atoms.material.solid = 0.
         self.atoms.material.primitive_color_mix = 1.0
+        self.atoms.material.roughness = 0.5
+        self.atoms.material.specular = 0.7
+        self.atoms.material.spec_trans = 0.
+        self.atoms.material.metal = 0.
         self.atoms.color[:] = fresnel.color.linear(
             [self.colors[x.specie.name] for x in self.structure]
         )
+
+        # set up bonds
+        self.bonds = make_bonds(self.scene, self.structure)
 
         # set up unit cell
         self.unit_cell = make_unit_cell(
@@ -65,7 +75,7 @@ class Viewer:
         )
 
         self.scene.camera = \
-            fresnel.camera.fit(self.scene, view='isometric', margin=0.1)
+            fresnel.camera.fit(self.scene, view='front', margin=0.5)
 
         return self.scene
 
@@ -91,6 +101,11 @@ class Viewer:
                 raise ValueError(f'invalid color {value_dict[ele]}')
 
         self._colors = value_dict
+
+    def interact(self):
+        view = fresnel.interact.SceneView(self.scene)
+        view.show()
+        fresnel.interact.app.exec_()
 
     def save_image(self, filename):
         if self.scene is None:
