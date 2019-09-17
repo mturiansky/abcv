@@ -22,7 +22,7 @@ setup(
         'numpy>=1.17.1', 'pymatgen>=2019.9.16'
     ],
     extras_require={
-        'dev': ['nose2>=0.9.1', 'coverage>=4.5.3'],
+        'dev': ['nose2>=0.9.1', 'coverage>=4.5.3', 'pillow>=6.1.0'],
     },
     keywords=['physics', 'materials', 'science', 'visualization'],
     classifiers=[
