@@ -1,7 +1,8 @@
 import PIL
 import fresnel
+import itertools
 import numpy as np
-from itertools import cycle
+from abcv.utils import make_unit_cell
 
 
 COLORSCHEME = [
@@ -28,36 +29,45 @@ class Viewer:
 
         # fresnel related
         self.scene = None
+        self.atoms = None
+        self.unit_cell = None
         self._image = None
 
-    def render(self):
+    def generate_scene(self, background_color=None, radius_scale=0.666):
         self.scene = fresnel.Scene()
-        self.scene.lights = fresnel.light.cloudy()
 
-        self._atoms = fresnel.geometry.Sphere(
+        if background_color is not None:
+            self.scene.background_color = background_color[:3]
+            self.scene.background_alpha = background_color[-1]
+
+        # set up atoms
+        self.atoms = fresnel.geometry.Sphere(
             self.scene,
             position=self.structure.cart_coords,
             radius=1.0,
-            outline_width=0.1
+            outline_width=0.
         )
 
-        self._atoms.radius[:] = \
-            [x.specie.data['Atomic radius'] for x in self.structure]
+        self.atoms.radius[:] = \
+            [radius_scale * x.specie.data['Atomic radius']
+             for x in self.structure]
 
-        self._atoms.material = fresnel.material.Material()
-        self._atoms.material.primitive_color_mix = 1.0
-        self._atoms.color[:] = fresnel.color.linear(
+        self.atoms.material = fresnel.material.Material()
+        self.atoms.material.primitive_color_mix = 1.0
+        self.atoms.color[:] = fresnel.color.linear(
             [self.colors[x.specie.name] for x in self.structure]
         )
 
-        self.scene.camera = \
-            fresnel.camera.fit(self.scene, view='front', margin=0.5)
-
-        self._image = fresnel.pathtrace(
-            self.scene, samples=64, light_samples=32, w=640, h=640
+        # set up unit cell
+        self.unit_cell = make_unit_cell(
+            self.scene,
+            self.structure.lattice.matrix
         )
 
-        return self._image
+        self.scene.camera = \
+            fresnel.camera.fit(self.scene, view='isometric', margin=0.1)
+
+        return self.scene
 
     @property
     def colors(self):
@@ -65,7 +75,7 @@ class Viewer:
             self._colors = {}
             species = \
                 np.unique([x.name for x in self.structure.species]).tolist()
-            for ele, c in zip(species, cycle(COLORSCHEME)):
+            for ele, c in zip(species, itertools.cycle(COLORSCHEME)):
                 self._colors[ele] = c
 
         return self._colors
@@ -83,7 +93,12 @@ class Viewer:
         self._colors = value_dict
 
     def save_image(self, filename):
-        if self._image is None:
-            self.render()
+        if self.scene is None:
+            self.generate_scene()
+
+        self._image = fresnel.pathtrace(
+            self.scene, samples=64, light_samples=32, w=640, h=640
+        )
 
         PIL.Image.fromarray(self._image[:], mode='RGBA').save(filename)
+        return self._image
