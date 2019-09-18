@@ -3,7 +3,8 @@ import fresnel
 import fresnel.interact
 import itertools
 import numpy as np
-from abcv.utils import make_unit_cell, make_bonds
+from collections.abc import Iterable
+from abcv.utils import make_unit_cell, make_bonds, make_isosurface
 
 
 COLORSCHEME = [
@@ -32,9 +33,11 @@ class Viewer:
         self.scene = None
         self.atoms = None
         self.unit_cell = None
+        self.isosurfaces = []
         self._image = None
 
-    def generate_scene(self, background_color=None, radius_scale=0.5):
+    def generate_scene(self, background_color=None, isosurface=0.1,
+                       radius_scale=0.5):
         self.scene = fresnel.Scene()
         self.scene.lights = fresnel.light.rembrandt()
 
@@ -47,7 +50,7 @@ class Viewer:
             self.scene,
             position=self.structure.cart_coords,
             radius=1.0,
-            outline_width=0.05
+            outline_width=0.
         )
 
         self.atoms.radius[:] = \
@@ -56,7 +59,7 @@ class Viewer:
 
         self.atoms.material = fresnel.material.Material()
         self.atoms.material.solid = 0.
-        self.atoms.material.primitive_color_mix = 1.0
+        self.atoms.material.primitive_color_mix = 1.
         self.atoms.material.roughness = 0.5
         self.atoms.material.specular = 0.7
         self.atoms.material.spec_trans = 0.
@@ -73,6 +76,16 @@ class Viewer:
             self.scene,
             self.structure.lattice.matrix
         )
+
+        # set up isosurfaces
+        if isosurface is not None and self.grid_data is not None:
+            if not isinstance(isosurface, Iterable):
+                isosurface = [isosurface]
+
+            for iso in isosurface:
+                self.isosurfaces.append(make_isosurface(
+                    self.scene, self.structure, self.grid_data, iso
+                ))
 
         self.scene.camera = \
             fresnel.camera.fit(self.scene, view='front', margin=0.5)

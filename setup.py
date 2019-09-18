@@ -19,11 +19,19 @@ setup(
     url='https://github.com/mturiansky/abcv',
     packages=find_packages(),
     install_requires=[
-        'numpy>=1.17.1', 'pymatgen>=2019.9.16', 'pyside2'
+        'numpy>=1.17.1',
+        'pymatgen>=2019.9.16',
+        'pyside2>=5.13.1',
+        'scikit-image>=0.15.0',
+        'click>=7.0'
     ],
     extras_require={
         'dev': ['nose2>=0.9.1', 'coverage>=4.5.3', 'pillow>=6.1.0'],
     },
+    entry_points='''
+        [console_scripts]
+        abcv=abcv.__main__:cli
+    ''',
     keywords=['physics', 'materials', 'science', 'visualization'],
     classifiers=[
         'Programming Language :: Python :: 3',

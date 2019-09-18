@@ -1,6 +1,7 @@
 import fresnel
 import itertools
 import numpy as np
+from skimage.measure import marching_cubes_lewiner
 from pymatgen.core.bonds import CovalentBond
 
 
@@ -66,3 +67,25 @@ def make_bonds(scene, structure, line_width=0.08, tol=0.2, color=[.1, .1, .1]):
     bonds_geom.material = fresnel.material.Material(
         color=fresnel.color.linear(color)
     )
+
+
+def make_isosurface(scene, structure, grid_data, percent_max):
+    verts, faces, _, _ = marching_cubes_lewiner(
+        grid_data,
+        level=percent_max * np.max(grid_data)
+    )
+
+    verts = verts[faces].reshape((3*faces.shape[0], 3))
+    verts /= grid_data.shape
+    verts = np.dot(verts, structure.lattice.matrix)
+
+    mesh = fresnel.geometry.Mesh(scene, vertices=verts, N=1)
+    mesh.color[:] = fresnel.color.linear([1., 0., 0., 0.5])
+    mesh.material.solid = 0.
+    mesh.material.primitive_color_mix = 1.
+    mesh.material.roughness = 0.5
+    mesh.material.specular = 0.7
+    mesh.material.spec_trans = 0.
+    mesh.material.metal = 0.
+
+    return mesh
