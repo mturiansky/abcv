@@ -80,12 +80,33 @@ def make_isosurface(scene, structure, grid_data, percent_max):
     verts = np.dot(verts, structure.lattice.matrix)
 
     mesh = fresnel.geometry.Mesh(scene, vertices=verts, N=1)
-    mesh.color[:] = fresnel.color.linear([1., 0., 0., 0.5])
+    mesh.color[:] = fresnel.color.linear([1., 0., 0.])
     mesh.material.solid = 0.
     mesh.material.primitive_color_mix = 1.
     mesh.material.roughness = 0.5
     mesh.material.specular = 0.7
-    mesh.material.spec_trans = 0.
+    mesh.material.spec_trans = 0.75
     mesh.material.metal = 0.
 
-    return mesh
+    if np.min(grid_data) < 0.:
+        verts, faces, _, _ = marching_cubes_lewiner(
+            grid_data,
+            level=percent_max * np.min(grid_data)
+        )
+
+        verts = verts[faces].reshape((3*faces.shape[0], 3))
+        verts /= grid_data.shape
+        verts = np.dot(verts, structure.lattice.matrix)
+
+        mesh_neg = fresnel.geometry.Mesh(scene, vertices=verts, N=1)
+        mesh_neg.color[:] = fresnel.color.linear([0., 0., 1.])
+        mesh_neg.material.solid = 0.
+        mesh_neg.material.primitive_color_mix = 1.
+        mesh_neg.material.roughness = 0.5
+        mesh_neg.material.specular = 0.7
+        mesh_neg.material.spec_trans = 0.75
+        mesh_neg.material.metal = 0.
+
+        return [mesh, mesh_neg]
+
+    return [mesh]

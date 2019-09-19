@@ -83,7 +83,7 @@ class Viewer:
                 isosurface = [isosurface]
 
             for iso in isosurface:
-                self.isosurfaces.append(make_isosurface(
+                self.isosurfaces.extend(make_isosurface(
                     self.scene, self.structure, self.grid_data, iso
                 ))
 
