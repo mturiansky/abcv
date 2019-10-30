@@ -120,12 +120,12 @@ class Viewer:
         view.show()
         fresnel.interact.app.exec_()
 
-    def save_image(self, filename):
+    def save_image(self, filename, samples=64, light_samples=32, w=640, h=640):
         if self.scene is None:
             self.generate_scene()
 
         self._image = fresnel.pathtrace(
-            self.scene, samples=64, light_samples=32, w=640, h=640
+            self.scene, samples=samples, light_samples=light_samples, w=w, h=h
         )
 
         PIL.Image.fromarray(self._image[:], mode='RGBA').save(filename)

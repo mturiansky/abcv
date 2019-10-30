@@ -67,6 +67,7 @@ def make_bonds(scene, structure, line_width=0.08, tol=0.2, color=[.1, .1, .1]):
     bonds_geom.material = fresnel.material.Material(
         color=fresnel.color.linear(color)
     )
+    return bonds_geom
 
 
 def make_isosurface(scene, structure, grid_data, percent_max):
