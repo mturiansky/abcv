@@ -15,7 +15,7 @@ nose2==0.9.1
 numpy==1.17.2
 palettable==3.3.0
 pandas==0.25.1
-Pillow==6.1.0
+Pillow==6.2.0
 PyDispatcher==2.0.5
 pymatgen==2019.9.16
 pyparsing==2.4.2
