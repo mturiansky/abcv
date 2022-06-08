@@ -88,7 +88,7 @@ class Viewer:
                 ))
 
         self.scene.camera = \
-            fresnel.camera.fit(self.scene, view='front', margin=0.5)
+            fresnel.camera.Orthographic.fit(self.scene, view='front', margin=0.5)
 
         return self.scene
 
